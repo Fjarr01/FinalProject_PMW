@@ -36,3 +36,15 @@ svg,
 svg * {
   text-transform: none;
 }
+
+@media (max-width: 768px) {
+  body {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 12px;
+  }
+}

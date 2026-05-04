@@ -62,7 +62,7 @@ function Dashboard({ buku, anggota, peminjaman, onNavigate }) {
         <p className="page-subtitle">Selamat datang di Sistem Manajemen Perpustakaan</p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "14px", marginBottom: "24px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 4fr))", gap: "14px", marginBottom: "24px" }}>
         <StatCard label="Total Buku" value={totalBuku} color="#3b82f6" icon={<FiBook />} sub="judul koleksi" />
         <StatCard label="Tersedia" value={tersedia} color="#10b981" icon={<FiCheckCircle />} sub="siap dipinjam" />
         <StatCard label="Sedang Dipinjam" value={dipinjam} color="#f59e0b" icon={<FiLogOut />} sub="buku keluar" />
@@ -109,7 +109,6 @@ function Dashboard({ buku, anggota, peminjaman, onNavigate }) {
           </table>
         </div>
 
-        {/* Panel kanan */}
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {/* Aksi cepat */}
           <div className="section-card" style={{ padding: "18px" }}>
@@ -137,7 +136,6 @@ function Dashboard({ buku, anggota, peminjaman, onNavigate }) {
             ))}
           </div>
 
-          {/* Progress stok */}
           <div className="section-card" style={{ padding: "18px" }}>
             <div style={{ fontSize: "13px", fontWeight: "600", color: "#0f172a", marginBottom: "12px" }}>Stok Buku</div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
