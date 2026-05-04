@@ -1,131 +1,54 @@
-import React, { useState, useMemo } from 'react';
-import { useLocalStorage } from './hooks/useLocalStorage';
-import { dummyBooks } from './data/dummyBooks';
-import SearchFilter from "./components/SearchFilter.jsx";
-import BookList from "./components/BookList.jsx";
-import BookForm from "./components/BookForm.jsx";
-import ConfirmModal from "./components/ConfirmModal.jsx";
+import React, { useState } from "react";
+import Sidebar from "./components/Sidebar";
+import Dashboard from "./components/Dashboard";
+import BookList from "./components/BookList";
+import AnggotaList from "./components/AnggotaList";
+import PeminjamanList from "./components/PeminjamanList";
+import useLocalStorage from "./hooks/useLocalStorage";
+import { dummyBooks, dummyAnggota, dummyPeminjaman } from "./data/dummyBooks";
+import "./styles/global.css";
+import "./styles/layout.css";
 
-import './styles/global.css';
-import './styles/layout.css';
-import './styles/table.css';
-import './styles/modal.css';
+function App() {
+  const [activePage, setActivePage] = useState("dashboard");
+  const [buku, setBuku] = useLocalStorage("perpus_buku", dummyBooks);
+  const [anggota, setAnggota] = useLocalStorage("perpus_anggota", dummyAnggota);
+  const [peminjaman, setPeminjaman] = useLocalStorage("perpus_peminjaman", dummyPeminjaman);
 
-export default function App() {
-  const [books, setBooks] = useLocalStorage('perpustakaan_books', dummyBooks);
-  const [search, setSearch] = useState('');
-  const [filterGenre, setFilterGenre] = useState('Semua');
-  const [filterStatus, setFilterStatus] = useState('Semua');
+  const handleAddBuku = (data) => setBuku([...buku, data]);
+  const handleEditBuku = (data) => setBuku(buku.map((b) => (b.id === data.id ? data : b)));
+  const handleDeleteBuku = (id) => setBuku(buku.filter((b) => b.id !== id));
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editBook, setEditBook] = useState(null);
+  const handleAddAnggota = (data) => setAnggota([...anggota, data]);
+  const handleEditAnggota = (data) => setAnggota(anggota.map((a) => (a.id === data.id ? data : a)));
+  const handleDeleteAnggota = (id) => setAnggota(anggota.filter((a) => a.id !== id));
 
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [bookToDelete, setBookToDelete] = useState(null);
+  const handleAddPeminjaman = (data) => setPeminjaman([...peminjaman, data]);
+  const handleEditPeminjaman = (data) => setPeminjaman(peminjaman.map((p) => (p.id === data.id ? data : p)));
+  const handleDeletePeminjaman = (id) => setPeminjaman(peminjaman.filter((p) => p.id !== id));
 
-  const filteredBooks = useMemo(() => {
-    return books.filter(book => {
-      const matchSearch = book.judul.toLowerCase().includes(search.toLowerCase()) ||
-                          book.penulis.toLowerCase().includes(search.toLowerCase());
-      const matchGenre = filterGenre === 'Semua' || book.genre === filterGenre;
-      const matchStatus = filterStatus === 'Semua' || book.status === filterStatus;
-      return matchSearch && matchGenre && matchStatus;
-    });
-  }, [books, search, filterGenre, filterStatus]);
-
-  const stats = {
-    total: books.length,
-    tersedia: books.filter(b => b.status === 'Tersedia').length,
-    dipinjam: books.filter(b => b.status === 'Dipinjam').length
+  const counts = {
+    buku: buku.length,
+    anggota: anggota.length,
+    peminjaman: peminjaman.length,
   };
 
-  const handleSave = (book) => {
-    if (editBook) {
-      setBooks(prev => prev.map(b => b.id === book.id ? book : b));
-    } else {
-      setBooks(prev => [book, ...prev]);
+  const renderPage = () => {
+    switch (activePage) {
+      case "dashboard": return <Dashboard buku={buku} anggota={anggota} peminjaman={peminjaman} onNavigate={setActivePage} />;
+      case "buku": return <BookList books={buku} onAdd={handleAddBuku} onEdit={handleEditBuku} onDelete={handleDeleteBuku} />;
+      case "anggota": return <AnggotaList anggota={anggota} onAdd={handleAddAnggota} onEdit={handleEditAnggota} onDelete={handleDeleteAnggota} />;
+      case "peminjaman": return <PeminjamanList peminjaman={peminjaman} buku={buku} anggota={anggota} onAdd={handleAddPeminjaman} onEdit={handleEditPeminjaman} onDelete={handleDeletePeminjaman} />;
+      default: return null;
     }
-    setEditBook(null);
-  };
-
-  const handleEdit = (book) => {
-    setEditBook(book);
-    setIsFormOpen(true);
-  };
-
-  const handleDeleteClick = (book) => {
-    setBookToDelete(book);
-    setIsConfirmOpen(true);
-  };
-
-  const handleConfirmDelete = () => {
-    if (bookToDelete) {
-      setBooks(prev => prev.filter(b => b.id !== bookToDelete.id));
-      setBookToDelete(null);
-      setIsConfirmOpen(false);
-    }
-  };
-
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
-    setEditBook(null);
   };
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>Sistem Manajemen Perpustakaan</h1>
-        <p>Kelola koleksi buku dengan mudah</p>
-      </header>
-
-      <div className="stats-container">
-        <div className="stat-card">
-          <h4>{stats.total}</h4>
-          <span>Total Buku</span>
-        </div>
-        <div className="stat-card available">
-          <h4>{stats.tersedia}</h4>
-          <span>Tersedia</span>
-        </div>
-        <div className="stat-card borrowed">
-          <h4>{stats.dipinjam}</h4>
-          <span>Dipinjam</span>
-        </div>
-      </div>
-
-      <div className="toolbar">
-        <SearchFilter
-          search={search}
-          setSearch={setSearch}
-          filterGenre={filterGenre}
-          setFilterGenre={setFilterGenre}
-          filterStatus={filterStatus}
-          setFilterStatus={setFilterStatus}
-        />
-        <button className="btn-add" onClick={() => setIsFormOpen(true)}>
-          Tambah Buku
-        </button>
-      </div>
-
-      <BookList
-        books={filteredBooks}
-        onEdit={handleEdit}
-        onDelete={handleDeleteClick}
-      />
-
-      <BookForm
-        isOpen={isFormOpen}
-        onClose={handleCloseForm}
-        onSave={handleSave}
-        editBook={editBook}
-      />
-
-      <ConfirmModal
-        isOpen={isConfirmOpen}
-        onClose={() => setIsConfirmOpen(false)}
-        onConfirm={handleConfirmDelete}
-        bookTitle={bookToDelete?.judul}
-      />
+    <div className="app-layout">
+      <Sidebar activePage={activePage} onNavigate={setActivePage} counts={counts} />
+      <main className="main-content">{renderPage()}</main>
     </div>
   );
 }
+
+export default App;

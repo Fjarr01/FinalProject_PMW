@@ -1,119 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import "../styles/modal.css";
 
-export default function BookForm({ isOpen, onClose, onSave, editBook }) {
-  const initialForm = {
-    judul: '',
-    penulis: '',
-    tahun: '',
-    genre: 'Fiksi',
-    status: 'Tersedia',
-    halaman: '',
-    sinopsis: ''
-  };
+const genreOptions = ["Fiksi", "Non-Fiksi", "Sejarah", "Sains", "Teknologi", "Biografi", "Lainnya"];
 
-  const [form, setForm] = useState(initialForm);
-  const [errors, setErrors] = useState({});
+function BookForm({ isOpen, onClose, onSave, editData }) {
+  const [form, setForm] = useState({
+    judul: "", penulis: "", tahun: new Date().getFullYear(),
+    genre: "Fiksi", halaman: "", deskripsi: "", status: "Tersedia",
+  });
 
   useEffect(() => {
-    if (editBook) {
-      setForm(editBook);
-    } else {
-      setForm(initialForm);
-    }
-    setErrors({});
-  }, [editBook, isOpen]);
-
-  const validate = () => {
-    const newErrors = {};
-    if (!form.judul.trim()) newErrors.judul = 'Judul wajib diisi';
-    if (!form.penulis.trim()) newErrors.penulis = 'Penulis wajib diisi';
-    if (!form.tahun || form.tahun < 1000 || form.tahun > 2100) newErrors.tahun = 'Tahun tidak valid';
-    if (!form.halaman || form.halaman < 1) newErrors.halaman = 'Jumlah halaman tidak valid';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-    onSave({ ...form, id: editBook ? editBook.id : Date.now() });
-    onClose();
-  };
+    if (editData) setForm({ ...editData });
+    else setForm({ judul: "", penulis: "", tahun: new Date().getFullYear(), genre: "Fiksi", halaman: "", deskripsi: "", status: "Tersedia" });
+  }, [editData, isOpen]);
 
   if (!isOpen) return null;
 
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = () => {
+    if (!form.judul.trim() || !form.penulis.trim()) { alert("Judul dan penulis wajib diisi!"); return; }
+    onSave({ ...form, tahun: Number(form.tahun), halaman: Number(form.halaman) });
+    onClose();
+  };
+
   return (
-    <div className="modal-overlay">
-      <div className="modal">
-        <h3>{editBook ? 'Edit Buku' : 'Tambah Buku Baru'}</h3>
-        <form onSubmit={handleSubmit}>
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <span className="modal-title">{editData ? "Edit Buku" : "Tambah Buku"}</span>
+          <button className="modal-close" onClick={onClose}>✕</button>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">Judul Buku *</label>
+          <input className="form-input" name="judul" value={form.judul} onChange={handleChange} placeholder="Masukkan judul buku" />
+        </div>
+        <div className="form-group">
+          <label className="form-label">Nama Penulis *</label>
+          <input className="form-input" name="penulis" value={form.penulis} onChange={handleChange} placeholder="Masukkan nama penulis" />
+        </div>
+        <div className="form-row">
           <div className="form-group">
-            <label>Judul Buku</label>
-            <input name="judul" value={form.judul} onChange={handleChange} />
-            {errors.judul && <span className="error">{errors.judul}</span>}
+            <label className="form-label">Tahun Terbit</label>
+            <input className="form-input" name="tahun" type="number" value={form.tahun} onChange={handleChange} min="1900" max="2099" />
           </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Penulis</label>
-              <input name="penulis" value={form.penulis} onChange={handleChange} />
-              {errors.penulis && <span className="error">{errors.penulis}</span>}
-            </div>
-            <div className="form-group">
-              <label>Tahun Terbit</label>
-              <input name="tahun" type="number" value={form.tahun} onChange={handleChange} />
-              {errors.tahun && <span className="error">{errors.tahun}</span>}
-            </div>
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Genre</label>
-              <select name="genre" value={form.genre} onChange={handleChange}>
-                <option>Fiksi</option>
-                <option>Non-Fiksi</option>
-                <option>Sejarah</option>
-                <option>Self-Help</option>
-                <option>Teknologi</option>
-                <option>Sains</option>
-                <option>Action</option>
-                <option>Drama</option>
-                <option>School</option>
-                <option>Romance</option>
-                <option>Pendidikan</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Status</label>
-              <select name="status" value={form.status} onChange={handleChange}>
-                <option>Tersedia</option>
-                <option>Dipinjam</option>
-              </select>
-            </div>
-          </div>
-
           <div className="form-group">
-            <label>Jumlah Halaman</label>
-            <input name="halaman" type="number" value={form.halaman} onChange={handleChange} />
-            {errors.halaman && <span className="error">{errors.halaman}</span>}
+            <label className="form-label">Jumlah Halaman</label>
+            <input className="form-input" name="halaman" type="number" value={form.halaman} onChange={handleChange} placeholder="cth: 350" />
           </div>
-
+        </div>
+        <div className="form-row">
           <div className="form-group">
-            <label>Sinopsis</label>
-            <textarea name="sinopsis" rows="3" value={form.sinopsis} onChange={handleChange}></textarea>
+            <label className="form-label">Genre</label>
+            <select className="form-select" name="genre" value={form.genre} onChange={handleChange}>
+              {genreOptions.map((g) => <option key={g}>{g}</option>)}
+            </select>
           </div>
+          <div className="form-group">
+            <label className="form-label">Status</label>
+            <select className="form-select" name="status" value={form.status} onChange={handleChange}>
+              <option>Tersedia</option>
+              <option>Dipinjam</option>
+            </select>
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">Deskripsi</label>
+          <textarea className="form-textarea" name="deskripsi" value={form.deskripsi} onChange={handleChange} placeholder="Deskripsi singkat buku..." />
+        </div>
 
-          <div className="modal-actions">
-            <button type="button" className="btn-secondary" onClick={onClose}>Batal</button>
-            <button type="submit" className="btn-primary">{editBook ? 'Simpan Perubahan' : 'Tambah Buku'}</button>
-          </div>
-        </form>
+        <div className="modal-footer">
+          <button className="btn-cancel" onClick={onClose}>Batal</button>
+          <button className="btn-save" onClick={handleSubmit}>{editData ? "Simpan Perubahan" : "Tambah Buku"}</button>
+        </div>
       </div>
     </div>
   );
 }
+
+export default BookForm;

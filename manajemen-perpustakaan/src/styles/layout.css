@@ -1,120 +1,150 @@
-/* Header */
-.app-header {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.app-header h1 {
-  color: #2c3e50;
-  font-size: 2rem;
-}
-
-.app-header p {
-  color: #7f8c8d;
-  margin-top: 4px;
-}
-
-/* Stats Dashboard */
-.stats-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  border-left: 4px solid #3498db;
-}
-
-.stat-card.available { border-left-color: #27ae60; }
-.stat-card.borrowed { border-left-color: #e74c3c; }
-
-.stat-card h4 {
-  font-size: 1.8rem;
-  color: #2c3e50;
-}
-
-.stat-card span {
-  color: #7f8c8d;
-  font-size: 0.9rem;
-}
-
-/* Toolbar */
-.toolbar {
+.app-layout {
   display: flex;
-  justify-content: space-between;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 230px;
+  min-width: 230px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 20px;
+  padding: 22px 18px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
-.search-filter {
+.sidebar-logo-icon { 
+  font-size: 26px; 
   display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-logo-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e3a5f;
+  line-height: 1.2;
+}
+
+.sidebar-logo-sub {
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
-  flex: 1;
-}
-
-.search-input, .filter-select {
-  padding: 10px 14px;
-  border: 1px solid #ddd;
+  padding: 10px 12px;
   border-radius: 8px;
-  font-size: 14px;
-  outline: none;
-}
-
-.search-input {
-  min-width: 250px;
-  flex: 1;
-}
-
-.search-input:focus, .filter-select:focus {
-  border-color: #3498db;
-}
-
-.btn-add {
-  background: #3498db;
-  color: white;
   border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
+  background: transparent;
   cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: 13.5px;
+  color: #64748b;
+  transition: all 0.15s ease;
+}
+
+.nav-item:hover { background: #f8fafc; color: #334155; }
+.nav-item.active { background: #eff6ff; color: #1d4ed8; font-weight: 500; }
+
+.nav-icon { 
+  font-size: 17px; 
+  width: 22px; 
+  text-align: center; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-label { flex: 1; }
+
+.nav-badge {
+  font-size: 10px;
   font-weight: 600;
-  transition: background 0.2s;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: #e2e8f0;
+  color: #475569;
 }
 
-.btn-add:hover {
-  background: #2980b9;
-}
+.nav-item.active .nav-badge { background: #1d4ed8; color: #ffffff; }
 
-/* Empty State */
-.empty-state {
+.sidebar-footer {
+  padding: 14px 18px;
+  border-top: 1px solid #f1f5f9;
+  font-size: 10px;
+  color: #cbd5e1;
   text-align: center;
-  padding: 60px 20px;
-  color: #888;
-  font-size: 1.1rem;
-  background: white;
-  border-radius: 12px;
 }
 
-/* Responsive Layout */
-@media (max-width: 768px) {
-  .toolbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .search-filter {
-    width: 100%;
-  }
-  
-  .search-input {
-    min-width: 100%;
-  }
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 32px;
+  min-width: 0;
+}
+
+.page-header { margin-bottom: 24px; }
+
+.page-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.page-subtitle { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+
+.sidebar-logo-icon svg {
+  width: 26px;
+  height: 26px;
+  color: #1d4ed8;
+}
+
+.nav-icon svg {
+  width: 18px;
+  height: 18px;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.nav-item:hover .nav-icon svg {
+  color: #334155;
+}
+
+.nav-item.active .nav-icon svg {
+  color: #1d4ed8;
+}
+
+button svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
