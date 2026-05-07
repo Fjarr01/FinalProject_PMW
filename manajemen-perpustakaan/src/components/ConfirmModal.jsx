@@ -2,7 +2,7 @@ import React from "react";
 import { FiAlertTriangle } from "react-icons/fi";
 import "../styles/modal.css";
 
-function ConfirmModal({ isOpen, onClose, onConfirm, title, message }) {
+function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmtext }) {
   if (!isOpen) return null;
   return (
     <div className="modal-backdrop" onClick={onClose}>

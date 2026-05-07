@@ -1,5 +1,5 @@
 import React from "react";
-import { FiHome, FiBookOpen, FiUsers, FiRepeat, FiBook } from "react-icons/fi";
+import { FiHome, FiBookOpen, FiUsers, FiRepeat, FiBook, FiLogOut, FiUser } from "react-icons/fi";
 import "../styles/layout.css";
 
 const menuItems = [
@@ -9,7 +9,7 @@ const menuItems = [
   { key: "peminjaman", label: "Peminjaman", icon: <FiRepeat /> },
 ];
 
-function Sidebar({ activePage, onNavigate, counts }) {
+function Sidebar({ activePage, onNavigate, counts, user, onLogout }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -19,6 +19,16 @@ function Sidebar({ activePage, onNavigate, counts }) {
           <div className="sidebar-logo-sub">Management System</div>
         </div>
       </div>
+
+      {user && (
+        <div className="sidebar-user">
+          <div className="sidebar-user-avatar"><FiUser /></div>
+          <div className="sidebar-user-info">
+            <div className="sidebar-user-name">{user.nama}</div>
+            <div className="sidebar-user-role">{user.role}</div>
+          </div>
+        </div>
+      )}
 
       <nav className="sidebar-nav">
         {menuItems.map((item) => (
@@ -36,7 +46,14 @@ function Sidebar({ activePage, onNavigate, counts }) {
         ))}
       </nav>
 
-      <div className="sidebar-footer">© 2025 Pustaka Digital</div>
+      <div className="sidebar-logout-wrap">
+        <button className="sidebar-logout" onClick={onLogout}>
+          <span className="nav-icon"><FiLogOut /></span>
+          <span className="sidebar-logout-text">Log out</span>
+        </button>
+      </div>
+
+      <div className="sidebar-footer">© 2026 Pustaka Digital</div>
     </aside>
   );
 }

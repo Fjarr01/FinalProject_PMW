@@ -1,3 +1,15 @@
+export const dummyUsers = [
+  {
+    id: "U001",
+    username: "admin",
+    password: "admin123",
+    nama: "administrator",
+    role: "admin",
+    email: "admin@pustaka.id",
+    avatar: "AD"
+  }
+];
+
 export const dummyBooks = [
 {
     id: 1,

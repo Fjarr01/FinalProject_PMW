@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { FiSearch, FiBookOpen, FiEdit2, FiTrash2, FiRepeat } from "react-icons/fi";
+import { FiSearch, FiBookOpen, FiEdit2, FiTrash2, FiRepeat, FiCamera } from "react-icons/fi";
+import { useZxing } from "react-zxing";
 import PeminjamanForm from "./PeminjamanForm";
 import ConfirmModal from "./ConfirmModal";
 import "../styles/table.css";
@@ -9,14 +10,43 @@ function formatTgl(d) {
   return new Date(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function PeminjamanList({ peminjaman, buku, anggota, onAdd, onEdit, onDelete }) {
+function QRScanner({ onResult, onClose }) {
+  const { ref } = useZxing({
+    onDecodeResult: (result) => {
+      onResult(result.getText());
+    },
+    onError: (error) => {
+      console.log(error);
+    }
+  });
+
+  return (
+    <div>
+      <video 
+        ref={ref} 
+        style={{ 
+          width: "100%", 
+          borderRadius: "12px",
+          maxHeight: "300px",
+          objectFit: "cover"
+        }} 
+      />
+      <div style={{ textAlign: "center", marginTop: "10px" }}>
+        <button className="btn-cancel" onClick={onClose}>Tutup Kamera</button>
+      </div>
+    </div>
+  );
+}
+
+function PeminjamanList({ peminjaman, buku, anggota, onAdd, onEdit, onDelete, onKembalikanBuku }) {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [showForm, setShowForm] = useState(false);
   const [editData, setEditData] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [showScanner, setShowScanner] = useState(false);
 
-  const getBuku = (id) => buku.find((b) => b.id === Number(id));
+  const getBuku = (id) => buku.find((b) => b.id === Number(id) || b.id === id);
   const getAnggota = (id) => anggota.find((a) => a.id === id);
 
   const filtered = peminjaman.filter((p) => {
@@ -29,6 +59,29 @@ function PeminjamanList({ peminjaman, buku, anggota, onAdd, onEdit, onDelete }) 
     const matchStatus = filterStatus === "Semua" || p.status === filterStatus;
     return matchSearch && matchStatus;
   });
+
+  const handleScan = (result) => {
+    try {
+      const parsed = JSON.parse(result);
+      if (parsed.type === "BUKU" && parsed.id) {
+        setShowScanner(false);
+        
+        const activePeminjaman = peminjaman.find(
+          p => p.bukuId === parsed.id && p.status === "Dipinjam"
+        );
+        
+        if (activePeminjaman) {
+          if (window.confirm(`Kembalikan buku "${parsed.judul}"?`)) {
+            onKembalikanBuku(activePeminjaman.id);
+          }
+        } else {
+          alert("Buku ini tidak sedang dipinjam atau sudah dikembalikan.");
+        }
+      }
+    } catch (e) {
+      alert("QR Code tidak valid");
+    }
+  };
 
   const handleEdit = (data) => { setEditData(data); setShowForm(true); };
   const handleCloseForm = () => { setShowForm(false); setEditData(null); };
@@ -56,13 +109,43 @@ function PeminjamanList({ peminjaman, buku, anggota, onAdd, onEdit, onDelete }) 
         <div className="toolbar">
           <div className="search-input-wrap">
             <span className="search-icon"><FiSearch /></span>
-            <input className="search-input" placeholder="Cari buku, anggota, atau ID..." value={search} onChange={(e) => setSearch(e.target.value)} />
+            <input 
+              className="search-input" 
+              placeholder="Cari buku, anggota, atau ID..." 
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)} 
+            />
           </div>
           <select className="filter-select" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
             {["Semua", "Dipinjam", "Dikembalikan", "Terlambat"].map((s) => <option key={s}>{s}</option>)}
           </select>
+          
+          <button 
+            className="btn-primary" 
+            onClick={() => setShowScanner(true)}
+            style={{ background: "#059669" }}
+          >
+            <FiCamera /> Scan QR
+          </button>
+          
           <button className="btn-primary" onClick={() => setShowForm(true)}>+ Tambah Peminjaman</button>
         </div>
+
+        {showScanner && (
+          <div className="modal-backdrop" onClick={() => setShowScanner(false)}>
+            <div className="modal-box small" onClick={(e) => e.stopPropagation()} style={{ width: "400px" }}>
+              <div className="confirm-title">Scan QR Buku</div>
+              <div className="confirm-text">Arahkan kamera ke QR Code pada buku</div>
+              
+              <div style={{ margin: "20px 0" }}>
+                <QRScanner 
+                  onResult={handleScan} 
+                  onClose={() => setShowScanner(false)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "48px", color: "#94a3b8" }}>
