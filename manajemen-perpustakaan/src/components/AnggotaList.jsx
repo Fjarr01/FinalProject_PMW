@@ -28,7 +28,7 @@ function AnggotaList({ anggota, onAdd, onEdit, onDelete }) {
   const [editData, setEditData] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
-  const filtered = anggota.filter((a) =>
+  const filtered = anggota.filter((a) => //input anggota berdasarkan nama, email, id
     a.nama.toLowerCase().includes(search.toLowerCase()) ||
     a.email.toLowerCase().includes(search.toLowerCase()) ||
     a.id.toLowerCase().includes(search.toLowerCase())
@@ -117,7 +117,7 @@ function AnggotaList({ anggota, onAdd, onEdit, onDelete }) {
 
       <AnggotaForm isOpen={showForm} onClose={handleCloseForm} onSave={handleSave} editData={editData} />
       <ConfirmModal 
-        isOpen={!!deleteId} 
+        isOpen={!!deleteId} //untuk menghapus data anggota
         onClose={() => setDeleteId(null)} 
         onConfirm={() => { onDelete(deleteId); setDeleteId(null); }} 
         title="Hapus Anggota?" 

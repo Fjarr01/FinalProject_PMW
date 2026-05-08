@@ -51,28 +51,21 @@ function App() {
   const handleEditPeminjaman = (data) => setPeminjaman(peminjaman.map((p) => (p.id === data.id ? data : p)));
   const handleDeletePeminjaman = (id) => setPeminjaman(peminjaman.filter((p) => p.id !== id));
 
-  const handleKembalikanBuku = (peminjamanId) => {
+  const handleKembalikanBuku = (peminjamanId, isTerlambat = false) => {
     const now = new Date().toISOString().split("T")[0];
     
     setPeminjaman(peminjaman.map((p) => {
       if (p.id === peminjamanId) {
         return { 
           ...p, 
-          status: "Dikembalikan",
+          status: isTerlambat ? "Terlambat" : "Dikembalikan",
           tanggalKembali: now
         };
       }
       return p;
     }));
     
-    const pinjam = peminjaman.find(p => p.id === peminjamanId);
-    if (pinjam) {
-      setBuku(buku.map((b) => 
-        b.id === pinjam.bukuId ? { ...b, status: "Tersedia" } : b
-      ));
-    }
-    
-    alert("Buku berhasil dikembalikan!");
+    alert(isTerlambat ? "Buku dikembalikan dengan status terlambat!" : "Buku berhasil dikembalikan!");
   };
 
   const counts = {
@@ -86,7 +79,13 @@ function App() {
       case "dashboard":
         return <Dashboard buku={buku} anggota={anggota} peminjaman={peminjaman} onNavigate={setActivePage} />;
       case "buku":
-        return <BookList books={buku} onAdd={handleAddBuku} onEdit={handleEditBuku} onDelete={handleDeleteBuku} />;
+        return <BookList 
+          books={buku} 
+          peminjaman={peminjaman} 
+          onAdd={handleAddBuku} 
+          onEdit={handleEditBuku} 
+          onDelete={handleDeleteBuku} 
+        />;
       case "anggota":
         return <AnggotaList anggota={anggota} onAdd={handleAddAnggota} onEdit={handleEditAnggota} onDelete={handleDeleteAnggota} />;
       case "peminjaman":

@@ -5,7 +5,7 @@ import ConfirmModal from "./ConfirmModal";
 import QRGenerator from "./QRGenerator";
 import "../styles/table.css";
 
-function BookList({ books, onAdd, onEdit, onDelete }) {
+function BookList({ books, peminjaman, onAdd, onEdit, onDelete }) {
   const [search, setSearch] = useState("");
   const [filterGenre, setFilterGenre] = useState("Semua");
   const [filterStatus, setFilterStatus] = useState("Semua");
@@ -16,10 +16,19 @@ function BookList({ books, onAdd, onEdit, onDelete }) {
 
   const genres = ["Semua", ...new Set(books.map((b) => b.genre))];
 
+  const getBookStatus = (bookId) => {
+    const active = peminjaman.find(
+      (p) => p.bukuId === bookId && p.status === "Dipinjam"
+    );
+    return active ? "Dipinjam" : "Tersedia";
+  };
+
   const filtered = books.filter((b) => {
     const matchSearch = b.judul.toLowerCase().includes(search.toLowerCase()) || b.penulis.toLowerCase().includes(search.toLowerCase());
     const matchGenre = filterGenre === "Semua" || b.genre === filterGenre;
-    const matchStatus = filterStatus === "Semua" || b.status === filterStatus;
+    // Gunakan derived status untuk filter
+    const bookStatus = getBookStatus(b.id);
+    const matchStatus = filterStatus === "Semua" || bookStatus === filterStatus;
     return matchSearch && matchGenre && matchStatus;
   });
 
@@ -73,41 +82,45 @@ function BookList({ books, onAdd, onEdit, onDelete }) {
                   <td colSpan={8}><span className="empty-icon"><FiBookOpen /></span>Tidak ada data buku</td>
                 </tr>
               ) : (
-                filtered.map((book, idx) => (
-                  <tr key={book.id}>
-                    <td style={{ color: "#94a3b8" }}>{idx + 1}</td>
-                    <td>
-                      <span className="td-title">{book.judul}</span>
-                      {book.deskripsi && <span className="td-sub">{book.deskripsi}</span>}
-                    </td>
-                    <td>{book.penulis}</td>
-                    <td>{book.tahun}</td>
-                    <td><span className="badge-genre">{book.genre}</span></td>
-                    <td>{book.halaman ? `${book.halaman} hal` : "-"}</td>
-                    <td>
-                      <span className={`badge ${book.status === "Tersedia" ? "badge-tersedia" : "badge-dipinjam"}`}>{book.status}</span>
-                    </td>
-                    <td>
-                      <div className="action-btns">
-                        <button className="btn-icon" onClick={() => setShowQR(book)} title="Lihat QR">
-                          <FiCamera />
-                        </button>
-                        <button className="btn-icon edit" onClick={() => handleEdit(book)} title="Edit">
-                          <FiEdit2 />
-                        </button>
-                        <button className="btn-icon del" onClick={() => setDeleteId(book.id)} title="Hapus">
-                          <FiTrash2 />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                filtered.map((book, idx) => {
+                  const currentStatus = getBookStatus(book.id); 
+                  return (
+                    <tr key={book.id}>
+                      <td style={{ color: "#94a3b8" }}>{idx + 1}</td>
+                      <td>
+                        <span className="td-title">{book.judul}</span>
+                        {book.deskripsi && <span className="td-sub">{book.deskripsi}</span>}
+                      </td>
+                      <td>{book.penulis}</td>
+                      <td>{book.tahun}</td>
+                      <td><span className="badge-genre">{book.genre}</span></td>
+                      <td>{book.halaman ? `${book.halaman} hal` : "-"}</td>
+                      <td>
+                        <span className={`badge ${currentStatus === "Tersedia" ? "badge-tersedia" : "badge-dipinjam"}`}>
+                          {currentStatus}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="action-btns">
+                          <button className="btn-icon" onClick={() => setShowQR(book)} title="Lihat QR">
+                            <FiCamera />
+                          </button>
+                          <button className="btn-icon edit" onClick={() => handleEdit(book)} title="Edit">
+                            <FiEdit2 />
+                          </button>
+                          <button className="btn-icon del" onClick={() => setDeleteId(book.id)} title="Hapus">
+                            <FiTrash2 />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </div>
-
 
       {showQR && (
         <div className="modal-backdrop" onClick={() => setShowQR(null)}>

@@ -6,12 +6,16 @@ const genreOptions = ["Fiksi", "Non-Fiksi", "Sejarah", "Sains", "Teknologi", "Bi
 function BookForm({ isOpen, onClose, onSave, editData }) {
   const [form, setForm] = useState({
     judul: "", penulis: "", tahun: new Date().getFullYear(),
-    genre: "Fiksi", halaman: "", deskripsi: "", status: "Tersedia",
+    genre: "Fiksi", halaman: "", deskripsi: "",
   });
 
   useEffect(() => {
-    if (editData) setForm({ ...editData });
-    else setForm({ judul: "", penulis: "", tahun: new Date().getFullYear(), genre: "Fiksi", halaman: "", deskripsi: "", status: "Tersedia" });
+    if (editData) {
+      const { status, ...rest } = editData;
+      setForm({ ...rest });
+    } else {
+      setForm({ judul: "", penulis: "", tahun: new Date().getFullYear(), genre: "Fiksi", halaman: "", deskripsi: "" });
+    }
   }, [editData, isOpen]);
 
   if (!isOpen) return null;
@@ -57,13 +61,7 @@ function BookForm({ isOpen, onClose, onSave, editData }) {
               {genreOptions.map((g) => <option key={g}>{g}</option>)}
             </select>
           </div>
-          <div className="form-group">
-            <label className="form-label">Status</label>
-            <select className="form-select" name="status" value={form.status} onChange={handleChange}>
-              <option>Tersedia</option>
-              <option>Dipinjam</option>
-            </select>
-          </div>
+          {/* FIELD STATUS DIHAPUS — status buku sekarang otomatis dari data peminjaman */}
         </div>
         <div className="form-group">
           <label className="form-label">Deskripsi</label>

@@ -5,18 +5,31 @@ function PeminjamanForm({ isOpen, onClose, onSave, editData, buku, anggota }) {
   const today = new Date().toISOString().slice(0, 10);
   const plus14 = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
 
-  const [form, setForm] = useState({ bukuId: "", anggotaId: "", tanggalPinjam: today, tanggalKembali: plus14, status: "Dipinjam" });
+  const [form, setForm] = useState({ 
+    bukuId: "", anggotaId: "", tanggalPinjam: today, tanggalKembali: plus14, status: "Dipinjam" 
+  });
 
   useEffect(() => {
-    if (editData) setForm({ ...editData, bukuId: String(editData.bukuId), anggotaId: String(editData.anggotaId) });
-    else setForm({ bukuId: String(buku[0]?.id || ""), anggotaId: String(anggota[0]?.id || ""), tanggalPinjam: today, tanggalKembali: plus14, status: "Dipinjam" });
-  }, [editData, isOpen]);
+    if (editData) {
+      setForm({ ...editData, bukuId: String(editData.bukuId), anggotaId: String(editData.anggotaId) });
+    } else {
+      setForm({ 
+        bukuId: String(buku[0]?.id || ""), 
+        anggotaId: String(anggota[0]?.id || ""), 
+        tanggalPinjam: today, 
+        tanggalKembali: plus14, 
+        status: "Dipinjam" 
+      });
+    }
+  }, [editData, isOpen, buku, anggota, today, plus14]);
 
   if (!isOpen) return null;
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  
   const handleSubmit = () => {
     if (!form.bukuId || !form.anggotaId) { alert("Pilih buku dan anggota!"); return; }
+    
     onSave({ ...form, bukuId: Number(form.bukuId) });
     onClose();
   };
@@ -50,12 +63,21 @@ function PeminjamanForm({ isOpen, onClose, onSave, editData, buku, anggota }) {
             <input className="form-input" name="tanggalKembali" type="date" value={form.tanggalKembali} onChange={handleChange} />
           </div>
         </div>
+        
         <div className="form-group">
           <label className="form-label">Status</label>
-          <select className="form-select" name="status" value={form.status} onChange={handleChange}>
+          <select 
+            className="form-select" 
+            name="status" 
+            value={form.status} 
+            onChange={handleChange}
+            disabled={!editData} 
+          >
             {["Dipinjam", "Dikembalikan", "Terlambat"].map((s) => <option key={s}>{s}</option>)}
           </select>
+          {!editData && <small style={{ color: "#94a3b8" }}>Status otomatis "Dipinjam" saat peminjaman baru</small>}
         </div>
+        
         <div className="modal-footer">
           <button className="btn-cancel" onClick={onClose}>Batal</button>
           <button className="btn-save" onClick={handleSubmit}>{editData ? "Simpan Perubahan" : "Tambah Peminjaman"}</button>

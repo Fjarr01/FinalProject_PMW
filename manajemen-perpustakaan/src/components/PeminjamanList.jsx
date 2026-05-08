@@ -10,6 +10,16 @@ function formatTgl(d) {
   return new Date(d).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
 }
 
+function getStatusPeminjaman(p) { //digunakan untuk mengetahui apakahbuku terlambat dikembalikan atau tidak
+  const today = new Date();
+  const tglKembali = new Date(p.tanggalKembali);
+  
+  if (p.status === "Dikembalikan") return "Dikembalikan";
+  if (p.status === "Terlambat") return "Terlambat";
+  if (today > tglKembali) return "Terlambat";
+  return "Dipinjam";
+}
+
 function QRScanner({ onResult, onClose }) {
   const { ref } = useZxing({
     onDecodeResult: (result) => {
@@ -56,23 +66,27 @@ function PeminjamanList({ peminjaman, buku, anggota, onAdd, onEdit, onDelete, on
       b?.judul.toLowerCase().includes(search.toLowerCase()) ||
       a?.nama.toLowerCase().includes(search.toLowerCase()) ||
       p.id.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = filterStatus === "Semua" || p.status === filterStatus;
+    const matchStatus = filterStatus === "Semua" || getStatusPeminjaman(p) === filterStatus;
     return matchSearch && matchStatus;
   });
 
   const handleScan = (result) => {
     try {
       const parsed = JSON.parse(result);
-      if (parsed.type === "BUKU" && parsed.id) {
+      if (parsed.type === "BUKU" && parsed.id) { //digunakan untuk scan qr
         setShowScanner(false);
         
         const activePeminjaman = peminjaman.find(
-          p => p.bukuId === parsed.id && p.status === "Dipinjam"
+          p => p.bukuId === parsed.id && getStatusPeminjaman(p) === "Dipinjam"
         );
         
         if (activePeminjaman) {
-          if (window.confirm(`Kembalikan buku "${parsed.judul}"?`)) {
-            onKembalikanBuku(activePeminjaman.id);
+          const today = new Date();
+          const tglKembali = new Date(activePeminjaman.tanggalKembali);
+          const isTerlambat = today > tglKembali;
+          
+          if (window.confirm(`Kembalikan buku "${parsed.judul}"?${isTerlambat ? '\n\n Buku terlambat!' : ''}`)) {
+            onKembalikanBuku(activePeminjaman.id, isTerlambat);//memberikan alert jika pengembalian buku terlambat
           }
         } else {
           alert("Buku ini tidak sedang dipinjam atau sudah dikembalikan.");
@@ -107,10 +121,10 @@ function PeminjamanList({ peminjaman, buku, anggota, onAdd, onEdit, onDelete, on
 
       <div className="section-card">
         <div className="toolbar">
-          <div className="search-input-wrap">
-            <span className="search-icon"><FiSearch /></span>
+          <div className="search-input-wrap"> 
+            <span className="search-icon"><FiSearch /></span> 
             <input 
-              className="search-input" 
+              className="search-input"
               placeholder="Cari buku, anggota, atau ID..." 
               value={search} 
               onChange={(e) => setSearch(e.target.value)} 
@@ -121,7 +135,7 @@ function PeminjamanList({ peminjaman, buku, anggota, onAdd, onEdit, onDelete, on
           </select>
           
           <button 
-            className="btn-primary" 
+            className="btn-primary"
             onClick={() => setShowScanner(true)}
             style={{ background: "#059669" }}
           >
@@ -131,6 +145,7 @@ function PeminjamanList({ peminjaman, buku, anggota, onAdd, onEdit, onDelete, on
           <button className="btn-primary" onClick={() => setShowForm(true)}>+ Tambah Peminjaman</button>
         </div>
 
+        
         {showScanner && (
           <div className="modal-backdrop" onClick={() => setShowScanner(false)}>
             <div className="modal-box small" onClick={(e) => e.stopPropagation()} style={{ width: "400px" }}>
@@ -157,6 +172,7 @@ function PeminjamanList({ peminjaman, buku, anggota, onAdd, onEdit, onDelete, on
             {filtered.map((p) => {
               const b = getBuku(p.bukuId);
               const a = getAnggota(p.anggotaId);
+              const currentStatus = getStatusPeminjaman(p);
               return (
                 <div key={p.id} className="peminjaman-row">
                   <div className="peminjaman-icon"><FiBookOpen /></div>
@@ -169,7 +185,7 @@ function PeminjamanList({ peminjaman, buku, anggota, onAdd, onEdit, onDelete, on
                     <div>s/d {formatTgl(p.tanggalKembali)}</div>
                   </div>
                   <div style={{ marginLeft: "12px" }}>
-                    <span className={badgeClass(p.status)}>{p.status}</span>
+                    <span className={badgeClass(currentStatus)}>{currentStatus}</span>
                   </div>
                   <div className="action-btns" style={{ marginLeft: "8px" }}>
                     <button className="btn-icon edit" onClick={() => handleEdit(p)} title="Edit"><FiEdit2 /></button>
